@@ -1,6 +1,6 @@
 import { useProducts } from "@/context/ProductsContext";
 import { notFound, useParams } from "next/navigation";
-import ProductCard from "@/app/components/ProductCard";
+import ProductCard from "@/components/ProductCard";
 
 export default function CategoryPage() {
   const { products, categories, loading } = useProducts();

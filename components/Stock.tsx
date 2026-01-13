@@ -1,15 +1,14 @@
+'use client'
+
 import Link from "next/link";
-import { Product } from "@/lib/data";
+import { useProducts } from "@/context/ProductsContext";
 import ProductCard from "./ProductCard";
 
-type Props = {
-  discountedProducts: Product[];
-};
 
-export function Stock({ discountedProducts }: Props) {
-  if (!discountedProducts || discountedProducts.length === 0) {
-    return null;
-  }
+
+export function Stock(){
+  const {products} = useProducts()
+  
 
   return (
     <section className="py-12">
@@ -26,7 +25,7 @@ export function Stock({ discountedProducts }: Props) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {discountedProducts.map((product) => (
+          {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

@@ -1,8 +1,9 @@
-'use client'
+"use client";
 
 import { useProducts } from "@/context/ProductsContext";
 import { notFound, useParams } from "next/navigation";
 import { Star } from "lucide-react";
+import './../../globals.css'
 
 export default function ProductPage() {
   const { products, loading } = useProducts();
@@ -10,12 +11,11 @@ export default function ProductPage() {
 
   if (loading) return <div className="text-center py-20">Загрузка...</div>;
 
-  // Проверяем, что params и products есть
   if (!params?.id || !products || products.length === 0) {
-    return <div className="text-center py-20">Товар не найден</div>;
+    return <div className="text-center py-20">пшпшТовар не найден</div>;
   }
-
-  const product = products.find((p) => p.id === params.id);
+  const cleanFilter = products.filter(Boolean)
+  const product = cleanFilter.find((p) => p.id === params.id);
 
   if (!product) notFound();
 
@@ -30,7 +30,9 @@ export default function ProductPage() {
             <Star
               key={i}
               className={`h-5 w-5 ${
-                i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                i < Math.floor(product.rating)
+                  ? "text-yellow-400 fill-current"
+                  : "text-gray-300"
               }`}
             />
           ))}

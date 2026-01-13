@@ -13,7 +13,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../../components/ProductCard";
 import { useProducts } from "@/context/ProductsContext";
 
 const categories = [
