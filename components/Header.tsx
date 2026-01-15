@@ -18,7 +18,7 @@ import {
 import { useCart } from "@/context/cartContext";
 import { useProducts } from "@/context/ProductsContext"; // Импортируем товары
 import CartDrawer from "./cartDrawer";
-import ThemeToggle from "./ThemeToogle";
+import ThemeToggle from "./ThemeToggle";
 
 const categories = [
   { name: "Электроника", slug: "electronics" },

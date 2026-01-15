@@ -1,66 +1,100 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Product } from '@/type/product'; // Используем ваш интерфейс
 
 type CartItem = {
   id: string;
   name: string;
   price: number;
   quantity: number;
-  image?: string;
+  category: string; // Полезно для отображения иконок в корзине
 };
 
 type CartContextType = {
-  cart: CartItem[];
-  addToCart: (product: any) => void;
+  cartItems: CartItem[]; // Переименовал для ясности
+  addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, delta: number) => void;
   clearCart: () => void;
   totalItems: number;
+  totalPrice: number; // Добавил общую сумму
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Загрузка корзины из localStorage при старте
+  // 1. Загрузка данных (Hydration-safe)
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
+    const savedCart = localStorage.getItem('cart_data'); // Уникальный ключ
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (error) {
+        console.error("Failed to parse cart", error);
+      }
+    }
+    setIsInitialized(true);
   }, []);
 
-  // Сохранение при каждом изменении
+  // 2. Сохранение изменений
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    if (isInitialized) {
+      localStorage.setItem('cart_data', JSON.stringify(cartItems));
+    }
+  }, [cartItems, isInitialized]);
 
-  const addToCart = (product: any) => {
-    setCart(prev => {
+  const addToCart = (product: Product, quantity: number = 1) => {
+    setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
         return prev.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + quantity } 
+            : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { 
+        id: product.id, 
+        name: product.name, 
+        price: product.price, 
+        category: product.category,
+        quantity 
+      }];
     });
   };
 
   const updateQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+    setCartItems(prev => prev.map(item => 
+      item.id === id 
+        ? { ...item, quantity: Math.max(1, item.quantity + delta) } 
+        : item
     ));
   };
 
   const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    setCartItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const clearCart = () => setCartItems([]);
+
+  // Вычисляемые значения
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, totalItems, clearCart: () => setCart([]) }}>
+    <CartContext.Provider value={{ 
+      cartItems, 
+      addToCart, 
+      removeFromCart, 
+      updateQuantity, 
+      totalItems, 
+      totalPrice, 
+      clearCart 
+    }}>
       {children}
     </CartContext.Provider>
   );
