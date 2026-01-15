@@ -3,70 +3,27 @@
 import { useState } from 'react'
 import { 
   Plus, Edit, Trash2, FolderTree, 
-  Search, MoreVertical, ArrowUpDown,
-  Eye, EyeOff
+  Search, MoreVertical, ChevronDown,
+  Eye, EyeOff, AlertCircle
 } from 'lucide-react'
 
-const categories = [
-  {
-    id: '1',
-    name: 'Электроника',
-    slug: 'electronics',
-    description: 'Смартфоны, ноутбуки, гаджеты',
-    products: 245,
-    status: 'active',
-    subcategories: ['Смартфоны', 'Ноутбуки', 'Наушники', 'Умные часы']
-  },
-  {
-    id: '2',
-    name: 'Одежда',
-    slug: 'clothing',
-    description: 'Мужская, женская, детская одежда',
-    products: 120,
-    status: 'active',
-    subcategories: ['Мужское', 'Женское', 'Детское', 'Обувь']
-  },
-  {
-    id: '3',
-    name: 'Для дома',
-    slug: 'home',
-    description: 'Бытовая техника и мебель',
-    products: 78,
-    status: 'active',
-    subcategories: ['Бытовая техника', 'Мебель', 'Текстиль', 'Кухня']
-  },
-  {
-    id: '4',
-    name: 'Красота',
-    slug: 'beauty',
-    description: 'Косметика и уход за собой',
-    products: 56,
-    status: 'active',
-    subcategories: ['Косметика', 'Парфюмерия', 'Уход за кожей', 'Волосы']
-  },
-  {
-    id: '5',
-    name: 'Спорт',
-    slug: 'sports',
-    description: 'Спортивные товары и инвентарь',
-    products: 34,
-    status: 'inactive',
-    subcategories: ['Тренажеры', 'Одежда', 'Аксессуары', 'Питание']
-  },
-  {
-    id: '6',
-    name: 'Книги',
-    slug: 'books',
-    description: 'Художественная и учебная литература',
-    products: 89,
-    status: 'active',
-    subcategories: ['Художественные', 'Учебные', 'Детские', 'Бизнес']
-  }
-]
+// Типизация для безопасности
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  products: number;
+  status: 'active' | 'inactive';
+  subcategories: string[];
+}
+
+// ... (данные categories остаются прежними)
 
 export default function AdminCategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -77,182 +34,129 @@ export default function AdminCategoriesPage() {
     setExpandedCategory(expandedCategory === id ? null : id)
   }
 
+  const handleDelete = (name: string) => {
+    if (confirm(`Вы уверены, что хотите удалить категорию "${name}"? Все связанные товары могут потерять привязку.`)) {
+      // Здесь будет вызов API
+      console.log('Удаление:', name)
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Заголовок */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Шапка с градиентом */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold">Категории</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Управление категориями товаров
+          <h1 className="text-2xl font-bold tracking-tight">Категории</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Структура вашего магазина: {categories.length} разделов
           </p>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-lg transition-colors">
-          <Plus className="h-4 w-4" />
-          Добавить категорию
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-200 dark:shadow-none font-medium"
+        >
+          <Plus className="h-5 w-5" />
+          Новая категория
         </button>
       </div>
 
-      {/* Поиск */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск категорий..."
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+      {/* Фильтр и поиск */}
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Поиск по названию или описанию..."
+          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all shadow-sm"
+        />
       </div>
 
-      {/* Список категорий */}
+      {/* Сетка категорий */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCategories.map((category) => (
           <div 
             key={category.id}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
+            className={`
+              group bg-white dark:bg-gray-800 rounded-2xl border transition-all duration-300
+              ${expandedCategory === category.id 
+                ? 'border-blue-500 ring-4 ring-blue-500/5' 
+                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 shadow-sm'}
+            `}
           >
-            {/* Заголовок категории */}
-            <div 
-              className="p-6 cursor-pointer"
-              onClick={() => toggleExpand(category.id)}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <FolderTree className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{category.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-400">{category.description}</p>
-                  </div>
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className={`p-3 rounded-xl transition-colors ${category.status === 'active' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}>
+                  <FolderTree className="h-6 w-6" />
                 </div>
-                <div className="flex items-center gap-1">
-                  {category.status === 'active' ? (
-                    <Eye className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <EyeOff className="h-4 w-4 text-red-600" />
-                  )}
+                <div className="flex gap-2">
+                   <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                     <Edit className="h-4 w-4" />
+                   </button>
+                   <button 
+                    onClick={() => handleDelete(category.name)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {category.products} товаров
+              <div onClick={() => toggleExpand(category.id)} className="cursor-pointer">
+                <h3 className="text-lg font-bold mb-1 group-hover:text-blue-600 transition-colors">{category.name}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 h-10">
+                  {category.description}
+                </p>
+                
+                <div className="flex items-center justify-between text-sm font-medium">
+                  <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                    <div className={`w-2 h-2 rounded-full ${category.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`} />
+                    {category.products} товаров
+                  </span>
+                  <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedCategory === category.id ? 'rotate-180' : ''}`} />
                 </div>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <ArrowUpDown className={`h-5 w-5 transition-transform ${
-                    expandedCategory === category.id ? 'rotate-180' : ''
-                  }`} />
-                </button>
               </div>
             </div>
 
-            {/* Подкатегории (раскрывающаяся часть) */}
-            {expandedCategory === category.id && (
-              <div className="border-t border-gray-200 dark:border-gray-700 p-6 animate-fadeInUp">
-                <h4 className="font-semibold mb-3">Подкатегории:</h4>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {category.subcategories.map((sub, index) => (
-                    <span 
-                      key={index}
-                      className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm"
-                    >
+            {/* Секция подкатегорий с анимацией высоты */}
+            <div className={`
+              overflow-hidden transition-all duration-300 ease-in-out border-t border-gray-100 dark:border-gray-700
+              ${expandedCategory === category.id ? 'max-h-96 opacity-100 bg-gray-50/50 dark:bg-gray-900/20' : 'max-h-0 opacity-0'}
+            `}>
+              <div className="p-6">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Подкатегории</p>
+                <div className="flex flex-wrap gap-2">
+                  {category.subcategories.map((sub, i) => (
+                    <span key={i} className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium shadow-sm">
                       {sub}
                     </span>
                   ))}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-blue-600 hover:text-blue-800">
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button className="p-2 text-red-600 hover:text-red-800">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <button className="p-2 text-gray-600 hover:text-gray-800">
-                    <MoreVertical className="h-4 w-4" />
+                  <button className="px-3 py-1.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-xs text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-all">
+                    + Добавить
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* Действия (если не раскрыто) */}
-            {expandedCategory !== category.id && (
-              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-                <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded-full text-xs ${
-                    category.status === 'active'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                  }`}>
-                    {category.status === 'active' ? 'Активна' : 'Неактивна'}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button className="p-1 text-blue-600 hover:text-blue-800">
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button className="p-1 text-red-600 hover:text-red-800">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Пустое состояние */}
-      {filteredCategories.length === 0 && (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <FolderTree className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">Категории не найдены</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Попробуйте изменить поисковый запрос
-          </p>
-          <button
-            onClick={() => setSearchQuery('')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Сбросить поиск
-          </button>
-        </div>
-      )}
-
-      {/* Статистика */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-bold mb-4">Общая статистика</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="text-2xl font-bold">{categories.length}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Всего категорий</div>
-          </div>
-          <div className="text-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="text-2xl font-bold">
-              {categories.filter(c => c.status === 'active').length}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Активных</div>
-          </div>
-          <div className="text-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="text-2xl font-bold">
-              {categories.reduce((sum, cat) => sum + cat.products, 0)}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Товаров всего</div>
-          </div>
-          <div className="text-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="text-2xl font-bold">
-              {Math.round(categories.reduce((sum, cat) => sum + cat.products, 0) / categories.length)}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Товаров на категорию</div>
-          </div>
-        </div>
+      {/* Статистика внизу */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <StatCard title="Активные разделы" value={categories.filter(c => c.status === 'active').length} color="text-green-600" />
+        <StatCard title="Всего товаров" value={categories.reduce((a, b) => a + b.products, 0)} color="text-blue-600" />
+        <StatCard title="Пустые категории" value={categories.filter(c => c.products === 0).length} color="text-orange-600" />
       </div>
+    </div>
+  )
+}
+
+function StatCard({ title, value, color }: { title: string, value: number, color: string }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</span>
+      <span className={`text-2xl font-bold ${color}`}>{value}</span>
     </div>
   )
 }

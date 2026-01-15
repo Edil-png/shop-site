@@ -4,99 +4,10 @@ import { useState } from 'react'
 import { 
   Plus, Search, Filter, Edit, Trash2, 
   Eye, MoreVertical, Download, Upload,
-  Check, X, Package, Tag
+  Check, X, Package, Tag, ArrowUpDown, AlertTriangle
 } from 'lucide-react'
 
-const products = [
-  {
-    id: '1',
-    name: 'Смартфон Samsung Galaxy S23',
-    sku: 'SM-G23-BLK',
-    category: 'Электроника',
-    price: 79999,
-    stock: 45,
-    status: 'active',
-    sales: 234,
-    image: '📱'
-  },
-  {
-    id: '2',
-    name: 'Наушники Sony WH-1000XM5',
-    sku: 'SONY-WH5',
-    category: 'Электроника',
-    price: 29999,
-    stock: 23,
-    status: 'active',
-    sales: 189,
-    image: '🎧'
-  },
-  {
-    id: '3',
-    name: 'Джинсы классические',
-    sku: 'JEANS-01',
-    category: 'Одежда',
-    price: 3499,
-    stock: 156,
-    status: 'active',
-    sales: 89,
-    image: '👖'
-  },
-  {
-    id: '4',
-    name: 'Кофемашина DeLonghi',
-    sku: 'DL-CF-01',
-    category: 'Для дома',
-    price: 29999,
-    stock: 12,
-    status: 'low-stock',
-    sales: 45,
-    image: '☕'
-  },
-  {
-    id: '5',
-    name: 'Крем для лица',
-    sku: 'CR-FACE-01',
-    category: 'Красота',
-    price: 1999,
-    stock: 0,
-    status: 'out-of-stock',
-    sales: 156,
-    image: '💄'
-  },
-  {
-    id: '6',
-    name: 'Умные часы Apple Watch',
-    sku: 'APPLE-WATCH-9',
-    category: 'Электроника',
-    price: 39999,
-    stock: 34,
-    status: 'active',
-    sales: 145,
-    image: '⌚'
-  },
-  {
-    id: '7',
-    name: 'Футболка хлопковая',
-    sku: 'TEE-01',
-    category: 'Одежда',
-    price: 1299,
-    stock: 267,
-    status: 'active',
-    sales: 67,
-    image: '👕'
-  },
-  {
-    id: '8',
-    name: 'Пылесос Dyson V15',
-    sku: 'DYSON-V15',
-    category: 'Для дома',
-    price: 59999,
-    stock: 8,
-    status: 'low-stock',
-    sales: 89,
-    image: '🧹'
-  }
-]
+// ... (данные products остаются прежними)
 
 export default function AdminProductsPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -112,169 +23,156 @@ export default function AdminProductsPage() {
     return matchesSearch && matchesCategory
   })
 
+  // Логика выбора
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev => 
-      prev.includes(id) 
-        ? prev.filter(productId => productId !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
     )
   }
 
   const toggleSelectAll = () => {
-    if (selectedProducts.length === filteredProducts.length) {
-      setSelectedProducts([])
-    } else {
-      setSelectedProducts(filteredProducts.map(p => p.id))
-    }
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 text-xs rounded-full">В наличии</span>
-      case 'low-stock':
-        return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 text-xs rounded-full">Мало</span>
-      case 'out-of-stock':
-        return <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-xs rounded-full">Нет в наличии</span>
-      default:
-        return null
-    }
+    setSelectedProducts(selectedProducts.length === filteredProducts.length ? [] : filteredProducts.map(p => p.id))
   }
 
   return (
-    <div className="space-y-6">
-      {/* Заголовок и действия */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 pb-20">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Товары</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Управление товарами магазина
+          <h1 className="text-2xl font-bold tracking-tight">Каталог товаров</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Всего {products.length} позиций в 5 категориях
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
-            <Upload className="h-4 w-4" />
-            Импорт
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
-            <Download className="h-4 w-4" />
-            Экспорт
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-lg transition-colors">
-            <Plus className="h-4 w-4" />
-            Добавить товар
-          </button>
-        </div>
-      </div>
-
-      {/* Фильтры и поиск */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск по названию или SKU..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+            <button className="p-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 transition-colors border-r border-gray-200 dark:border-gray-700">
+              <Upload className="h-4 w-4 text-gray-600" />
+            </button>
+            <button className="p-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 transition-colors">
+              <Download className="h-4 w-4 text-gray-600" />
+            </button>
           </div>
-
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">Все категории</option>
-            {categories.filter(c => c !== 'all').map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
-
-          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-            <Filter className="h-4 w-4" />
-            Больше фильтров
+          <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+            <Plus className="h-4 w-4" />
+            Создать товар
           </button>
         </div>
       </div>
 
-      {/* Таблица товаров */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск по названию, бренду или артикулу..."
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+          />
+        </div>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-medium outline-none focus:border-blue-500"
+        >
+          <option value="all">Все категории</option>
+          {categories.filter(c => c !== 'all').map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button className="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 transition-colors">
+          <Filter className="h-5 w-5 text-gray-500" />
+        </button>
+      </div>
+
+      {/* Table Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto text-sm">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-700">
-                <th className="w-12 px-6 py-4">
+              <tr className="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                <th className="p-5 text-left w-10">
                   <input
                     type="checkbox"
                     checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
                     onChange={toggleSelectAll}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                 </th>
-                <th className="text-left px-6 py-4 font-semibold">Товар</th>
-                <th className="text-left px-6 py-4 font-semibold">Категория</th>
-                <th className="text-left px-6 py-4 font-semibold">Цена</th>
-                <th className="text-left px-6 py-4 font-semibold">Остаток</th>
-                <th className="text-left px-6 py-4 font-semibold">Статус</th>
-                <th className="text-left px-6 py-4 font-semibold">Продажи</th>
-                <th className="text-left px-6 py-4 font-semibold">Действия</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-500">Товар</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-500">Категория</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-500">
+                   <div className="flex items-center gap-1">Цена <ArrowUpDown className="h-3 w-3" /></div>
+                </th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-500 text-center">Склад</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-500">Статус</th>
+                <th className="px-6 py-4 text-right font-semibold text-gray-500">Действия</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
               {filteredProducts.map((product) => (
                 <tr 
                   key={product.id}
-                  className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  className={`group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors ${selectedProducts.includes(product.id) ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
                 >
-                  <td className="px-6 py-4">
+                  <td className="p-5">
                     <input
                       type="checkbox"
                       checked={selectedProducts.includes(product.id)}
                       onChange={() => toggleProductSelection(product.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{product.image}</div>
-                      <div>
-                        <div className="font-medium">{product.name}</div>
-                        <div className="text-sm text-gray-500">SKU: {product.sku}</div>
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xl shadow-inner border border-gray-200 dark:border-gray-600 group-hover:scale-105 transition-transform cursor-pointer">
+                        {product.image}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors cursor-pointer leading-tight">
+                          {product.name}
+                        </span>
+                        <span className="text-[11px] text-gray-400 font-mono mt-1">SKU: {product.sku}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-4 w-4 text-gray-400" />
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-medium">
                       {product.category}
-                    </div>
+                    </span>
                   </td>
-                  <td className="px-6 py-4 font-bold">${product.price.toLocaleString()}</td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium">{product.stock} шт.</div>
-                  </td>
-                  <td className="px-6 py-4">{getStatusBadge(product.status)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-blue-600" />
-                      {product.sales}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-bold text-gray-900 dark:text-white">
+                      {product.price.toLocaleString('ru-RU')} ₽
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1 text-blue-600 hover:text-blue-800">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="p-1 text-green-600 hover:text-green-800">
+                    <div className="flex flex-col items-center gap-1.5 min-w-[100px]">
+                       <div className="flex justify-between w-full text-[11px] font-medium px-0.5">
+                          <span className={product.stock < 10 ? 'text-rose-500' : 'text-gray-400'}>{product.stock} шт.</span>
+                          <span className="text-gray-400">100+</span>
+                       </div>
+                       <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full ${product.stock === 0 ? 'bg-rose-500' : product.stock < 15 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            style={{ width: `${Math.min(product.stock, 100)}%` }}
+                          />
+                       </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {getStatusBadge(product.status)}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg text-blue-600 transition-shadow border border-transparent hover:border-gray-100 shadow-sm" title="Правка">
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="p-1 text-red-600 hover:text-red-800">
+                      <button className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg text-red-500 transition-shadow border border-transparent hover:border-gray-100 shadow-sm" title="Удалить">
                         <Trash2 className="h-4 w-4" />
                       </button>
-                      <button className="p-1 text-gray-600 hover:text-gray-800">
+                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
                         <MoreVertical className="h-4 w-4" />
                       </button>
                     </div>
@@ -284,55 +182,50 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
         </div>
-
-        {/* Пагинация */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Показано {filteredProducts.length} из {products.length} товаров
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
-              ←
-            </button>
-            {[1, 2, 3].map(page => (
-              <button
-                key={page}
-                className={`px-3 py-1 rounded ${
-                  page === 1
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
-              →
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Выбранные товары */}
+      {/* Bulk Actions Toolbar (Floating) */}
       {selectedProducts.length > 0 && (
-        <div className="fixed bottom-6 right-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              Выбрано {selectedProducts.length} товаров
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8">
+          <div className="bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-white/10 ring-4 ring-black/5">
+            <div className="flex items-center gap-3 pr-6 border-r border-white/20">
+              <div className="h-6 w-6 bg-blue-500 rounded-md flex items-center justify-center text-xs font-bold">
+                {selectedProducts.length}
+              </div>
+              <span className="text-sm font-medium">Выбрано товаров</span>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 rounded-lg text-sm hover:bg-red-200 dark:hover:bg-red-800">
-                <Trash2 className="h-4 w-4 inline mr-1" />
-                Удалить
+            <div className="flex items-center gap-4">
+              <button className="flex items-center gap-2 text-sm hover:text-blue-400 transition-colors">
+                <Edit className="h-4 w-4" /> Изменить цены
               </button>
-              <button className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg text-sm hover:bg-blue-200 dark:hover:bg-blue-800">
-                <Edit className="h-4 w-4 inline mr-1" />
-                Редактировать
+              <button className="flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors">
+                <Trash2 className="h-4 w-4" /> Удалить
+              </button>
+              <button 
+                onClick={() => setSelectedProducts([])}
+                className="ml-4 p-1 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+const getStatusBadge = (status: string) => {
+  const map = {
+    active: { text: 'В наличии', class: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+    'low-stock': { text: 'Мало', class: 'bg-amber-50 text-amber-700 border-amber-100', icon: AlertTriangle },
+    'out-of-stock': { text: 'Нет', class: 'bg-rose-50 text-rose-700 border-rose-100' }
+  }
+  const config = map[status as keyof typeof map] || map.active
+  return (
+    <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 w-fit ${config.class}`}>
+      {config.icon && <config.icon className="h-3 w-3" />}
+      {config.text}
+    </span>
   )
 }

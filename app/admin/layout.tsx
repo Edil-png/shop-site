@@ -4,56 +4,53 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { 
-  BarChart3, Package, ShoppingCart, Users, 
-  Settings, LogOut, Menu, X, Bell, Search,
-  Home, FolderTree, DollarSign, Shield
+  Menu, Bell, Search, Shield, ChevronLeft, LogOut, Users, 
+  ShoppingCart,
+  BarChart3,
+  FolderTree,
+  DollarSign,
+  Settings,
+  Package
 } from 'lucide-react'
 
-const adminNavItems = [
-  { name: 'Дашборд', href: '/admin', icon: <BarChart3 className="h-5 w-5" /> },
-  { name: 'Товары', href: '/admin/products', icon: <Package className="h-5 w-5" /> },
-  { name: 'Заказы', href: '/admin/orders', icon: <ShoppingCart className="h-5 w-5" /> },
-  { name: 'Категории', href: '/admin/categories', icon: <FolderTree className="h-5 w-5" /> },
-  { name: 'Пользователи', href: '/admin/users', icon: <Users className="h-5 w-5" /> },
-  { name: 'Аналитика', href: '/admin/analytics', icon: <DollarSign className="h-5 w-5" /> },
-  { name: 'Настройки', href: '/admin/settings', icon: <Settings className="h-5 w-5" /> },
+// Массив навигации: передаем сами компоненты иконок
+export const adminNavItems = [
+  { name: 'Дашборд', href: '/admin', icon: BarChart3 },
+  { name: 'Товары', href: '/admin/products', icon: Package },
+  { name: 'Заказы', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Категории', href: '/admin/categories', icon: FolderTree },
+  { name: 'Пользователи', href: '/admin/users', icon: Users },
+  { name: 'Аналитика', href: '/admin/analytics', icon: DollarSign },
+  { name: 'Настройки', href: '/admin/settings', icon: Settings },
 ]
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    // Проверка авторизации
-    const checkAuth = () => {
-      const token = localStorage.getItem('admin_token')
-      setIsAuthenticated(!!token)
-      
-      if (!token && pathname !== '/admin/login') {
-        router.push('/admin/login')
-      }
+    // 1. Проверка авторизации
+    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
+    const isLoginPage = pathname === '/admin/login'
+
+    if (!token && !isLoginPage) {
+      router.replace('/admin/login')
+      return
     }
 
-    checkAuth()
-
-    // Проверка размера экрана
+    // 2. Адаптивность
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024)
-      if (window.innerWidth < 1024) {
-        setSidebarOpen(false)
-      } else {
-        setSidebarOpen(true)
-      }
+      const mobile = window.innerWidth < 1024
+      setIsMobile(mobile)
+      if (mobile) setSidebarOpen(false)
     }
 
     handleResize()
+    setIsLoading(false)
+
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [pathname, router])
@@ -63,140 +60,125 @@ export default function AdminLayout({
     router.push('/admin/login')
   }
 
-  if (!isAuthenticated && pathname !== '/admin/login') {
-    return null
-  }
-
-  if (pathname === '/admin/login') {
-    return <>{children}</>
-  }
+  if (pathname === '/admin/login') return <>{children}</>
+  if (isLoading) return <AdminSkeleton />
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Сайдбар */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300
-        bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        {/* Логотип */}
-        <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
-          <Link href="/admin" className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            <div>
-              <span className="font-bold text-lg">Admin</span>
-              <span className="font-bold text-lg text-blue-600">Panel</span>
-            </div>
-          </Link>
-        </div>
+    <div className="flex min-h-screen bg-[#F9FAFB] dark:bg-[#111827]">
+      {/* Sidebar Overlay для мобилок */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        {/* Навигация */}
-        <nav className="p-4 space-y-1">
-          {adminNavItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`
-                  flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
-                  ${isActive
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }
-                `}
-                onClick={() => isMobile && setSidebarOpen(false)}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </Link>
-            )
-          })}
-        </nav>
+      {/* Sidebar */}
+      <aside 
+        className={`
+          fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+          transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
+        <div className="flex flex-col h-full">
+          <div className="h-20 flex items-center px-8 border-b border-gray-100 dark:border-gray-700">
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-200">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xl font-bold tracking-tight dark:text-white">
+                Simple<span className="text-blue-600">Admin</span>
+              </span>
+            </Link>
+          </div>
 
-        {/* Выход */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-            <span>Выйти</span>
-          </button>
+          <nav className="flex-1 overflow-y-auto p-6 space-y-2">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-4">
+              Управление
+            </p>
+            {adminNavItems.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
+              
+              // ПРАВКА ТУТ: Сохраняем иконку в переменную с Большой буквы
+              const Icon = item.icon
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => isMobile && setSidebarOpen(false)}
+                  className={`
+                    group flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                    ${isActive 
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-none' 
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-blue-600'}
+                  `}
+                >
+                  {/* ПРАВКА ТУТ: Рендерим как компонент <Icon /> */}
+                  <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-blue-600'}`} />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              )
+            })}
+          </nav>
+
+          <div className="p-6 border-t border-gray-100 dark:border-gray-700">
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors"
+            >
+              <LogOut className="h-5 w-5" />
+              Выход
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Основной контент */}
-      <div className={`
-        min-h-screen transition-all duration-300
-        ${sidebarOpen ? 'lg:ml-64' : ''}
-      `}>
-        {/* Шапка */}
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="h-16 px-6 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              >
-                {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Поиск..."
-                  className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+      {/* Main Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 dark:border-gray-700 px-8 flex items-center justify-between">
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)} 
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+          >
+            {sidebarOpen ? <ChevronLeft /> : <Menu />}
+          </button>
+          
+          <div className="flex items-center gap-4">
+            <div className="relative hidden sm:block">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input 
+                type="text" 
+                placeholder="Поиск..." 
+                className="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+              />
             </div>
-
-            <div className="flex items-center space-x-4">
-              <button className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                  A
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">Администратор</div>
-                  <div className="text-xs text-gray-500">admin@simpleshop.ru</div>
-                </div>
-              </div>
+            <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
+            </button>
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+              A
             </div>
           </div>
         </header>
 
-        {/* Контент */}
-        <main className="p-6">
+        <main className="p-8 max-w-[1600px] mx-auto w-full">
           {children}
         </main>
-
-        {/* Подвал */}
-        <footer className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500">
-          <div className="flex justify-between items-center">
-            <div>© 2024 SimpleShop Admin Panel</div>
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2 hover:text-blue-600">
-                <Home className="h-4 w-4" />
-                <span>На сайт</span>
-              </Link>
-            </div>
-          </div>
-        </footer>
       </div>
+    </div>
+  )
+}
 
-      {/* Overlay для мобильных */}
-      {sidebarOpen && isMobile && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+function AdminSkeleton() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-950">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+        <p className="text-gray-400 font-medium animate-pulse">Загрузка панели...</p>
+      </div>
     </div>
   )
 }

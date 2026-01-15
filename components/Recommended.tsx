@@ -17,6 +17,7 @@ type Props = {
 };
 
 export function Recommended({ featuredProducts }: Props) {
+  console.log(featuredProducts);
   return (
     <section id="products" className="py-12">
       <div className="container mx-auto px-4">
@@ -32,9 +33,11 @@ export function Recommended({ featuredProducts }: Props) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {featuredProducts
+            ?.filter((p): p is Product => p !== null)
+            .map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </div>
       </div>
     </section>
