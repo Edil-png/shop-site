@@ -1,37 +1,45 @@
-import { CartProvider } from "@/context/cartContext";
-import { ProductsProvider } from "@/context/ProductsContext";
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "sonner";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { ProductsProvider } from "@/context/ProductsContext";
+import { CartProvider } from "@/context/cartContext";
+import { Toaster } from "sonner"; // Установите: npm install sonner
+import Header from "@/components/header/Header";
+import Footer from "@/components/footer/Footer";
+import { FavoriteProvider } from "@/context/FavoriteContext";
+import { ThemeProvider } from "@/context/ThemeProvide";
 
-// app/layout.tsx
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Modern Shop | Marketplace",
+  description: "Лучшие товары по лучшим ценам",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    // suppressHydrationWarning обязателен для next-themes на теге html
-    <html lang="ru" className="scroll-smooth" suppressHydrationWarning>
-      <body
-        className={` antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300`}
-      >
+    <html lang="ru" suppressHydrationWarning>
+      <body className={inter.className}>
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange // Рекомендуется, чтобы избежать мигания при смене темы
+          attribute="class" 
+          defaultTheme="system" 
+          enableSystem={true} 
+          disableTransitionOnChange 
         >
-          <ProductsProvider>
-            <CartProvider>
-              <Header />
-              {children}
-              <Footer />
-            </CartProvider>
-          </ProductsProvider>
-          <Toaster position="bottom-right" richColors />
+          <FavoriteProvider>
+            <ProductsProvider>
+              <CartProvider>
+                <Header />
+                {children}
+                <Footer />
+                <Toaster position="top-center" />
+              </CartProvider>
+            </ProductsProvider>
+          </FavoriteProvider>
         </ThemeProvider>
       </body>
     </html>
