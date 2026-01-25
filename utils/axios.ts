@@ -1,45 +1,35 @@
 import axios, { AxiosError } from "axios";
 
+const API_URL = "http://localhost:5000";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api",
+  baseURL:  API_URL,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
-});
-
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }
-  return config;
 });
 
 api.interceptors.response.use(
-  (res) => res,
-  (error: AxiosError<{ message?: string }>) => {
-    const status = error.response?.status;
+  (response) => response,
+  (error: AxiosError) => {
+    console.error("API Error Details:", {
+      message: error.message || "Нет сообщения об ошибке",
+      status: error.response?.status || "Нет статуса",
+      url: error.config?.url || "Неизвестный URL",
+      method: error.config?.method || "Неизвестный метод",
+      data: error.response?.data || "Нет данных",
+      code: error.code || "Нет кода",
+    });
 
-    switch (status) {
-      case 401:
-        console.error("Сессия истекла");
-        break;
-      case 404:
-        console.error("Ресурс не найден");
-        break;
-      case 500:
-        console.error("Ошибка сервера");
-        break;
+    // Если это 404, не выбрасываем ошибку дальше
+    if (error.response?.status === 404) {
+      console.warn("Ресурс не найден, возвращаем пустой ответ");
+      return Promise.resolve({ data: [] });
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

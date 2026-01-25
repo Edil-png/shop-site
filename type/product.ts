@@ -12,9 +12,11 @@ export type Product = {
   rating: number;
   createdAt: string;
   reviews: number;
+  features: [];
+  stock: number;
   inStock: boolean;
   isNew?: boolean;
-  discount?: number;
+  discount: number;
   images: string[]; // Добавил массив изображений
   specifications?: Record<string, string>; // Технические характеристики
   tags?: string[]; // Теги для поиска
@@ -26,20 +28,13 @@ export type Product = {
   };
 };
 
-/* ===== ВАРИАНТЫ ТОВАРА (например, размер, цвет) ===== */
-export type ProductVariant = {
-  id: string;
-  productId: string;
-  sku: string;
-  name: string;
-  price: number;
-  attributes: Record<string, string>; // { size: 'XL', color: 'red' }
-  stock: number;
-  image?: string;
-};
+
 
 /* ===== КАТЕГОРИЯ ===== */
 export type Category = {
+  subcategories: any;
+  products: ReactNode;
+  status: string;
   id: string;
   name: string;
   description: string; // Переименовал about в description для консистентности
@@ -100,7 +95,7 @@ export type CartItem = {
   quantity: number;
   category: string;
   image?: string;
-  maxStock?: number; // Максимальное доступное количество
+  maxStock?: number; 
 };
 
 /* ===== ЗАКАЗ ===== */
@@ -115,12 +110,16 @@ export type OrderItem = {
 };
 
 export type Order = {
+  pay: ReactNode;
+  addresses: ReactNode;
+  customer: any;
   id: string;
   userId: string;
   orderNumber: string; // Человекочитаемый номер
   date: string;
   total: number;
   subtotal: number;
+  createdAt: string;
   shippingCost: number;
   tax: number;
   status:

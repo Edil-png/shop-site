@@ -2,12 +2,13 @@
 
 import { CreditCard, Trash2, Plus, CheckCircle2 } from "lucide-react";
 import { PaymentMethod } from "@/type/product";
+import { useAuth } from "@/context/authContext";
 
-interface PayTabProps {
-  methods: PaymentMethod[];
-}
+export function PayTab() {
+  const { user } = useAuth();
+  const methods = user?.paymentMethods;
 
-export function PayTab({ methods }: PayTabProps) {
+ console.log(methods)
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
@@ -22,7 +23,9 @@ export function PayTab({ methods }: PayTabProps) {
         {methods.length === 0 ? (
           <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
             <CreditCard className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">У вас нет сохраненных способов оплаты</p>
+            <p className="text-gray-500">
+              У вас нет сохраненных способов оплаты
+            </p>
           </div>
         ) : (
           methods.map((method) => (
@@ -37,7 +40,9 @@ export function PayTab({ methods }: PayTabProps) {
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                    <CreditCard className={`h-6 w-6 ${method.isDefault ? "text-blue-600" : "text-gray-400"}`} />
+                    <CreditCard
+                      className={`h-6 w-6 ${method.isDefault ? "text-blue-600" : "text-gray-400"}`}
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -80,7 +85,8 @@ export function PayTab({ methods }: PayTabProps) {
           <CheckCircle2 className="h-5 w-5 text-amber-600" />
         </div>
         <p className="text-sm text-amber-800 dark:text-amber-200">
-          Ваши платежные данные надежно зашифрованы и защищены по стандарту PCI DSS. Мы не храним полные номера карт на наших серверах.
+          Ваши платежные данные надежно зашифрованы и защищены по стандарту PCI
+          DSS. Мы не храним полные номера карт на наших серверах.
         </p>
       </div>
     </div>

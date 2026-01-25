@@ -7,7 +7,7 @@ import { Toaster } from "sonner"; // Установите: npm install sonner
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import { FavoriteProvider } from "@/context/FavoriteContext";
-import { ThemeProvider } from "@/context/ThemeProvide";
+import { AuthProvider } from "@/context/authContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,23 +24,18 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class" 
-          defaultTheme="system" 
-          enableSystem={true} 
-          disableTransitionOnChange 
-        >
-          <FavoriteProvider>
-            <ProductsProvider>
+        <ProductsProvider>
+          <AuthProvider>
+            <FavoriteProvider>
               <CartProvider>
-                <Header />
+                <Header products={[]} />
                 {children}
                 <Footer />
                 <Toaster position="top-center" />
               </CartProvider>
-            </ProductsProvider>
-          </FavoriteProvider>
-        </ThemeProvider>
+            </FavoriteProvider>
+          </AuthProvider>
+        </ProductsProvider>
       </body>
     </html>
   );

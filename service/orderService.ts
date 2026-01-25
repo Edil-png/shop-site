@@ -13,7 +13,6 @@ interface OrderData {
 }
 
 export const createOrder = async (order: OrderData) => {
-  // Отправляем POST запрос на ваш бэкенд
   const { data } = await api.post('/orders', order);
   return data;
 };

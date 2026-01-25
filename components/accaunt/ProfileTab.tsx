@@ -1,52 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Camera, Check, Edit, X } from "lucide-react";
 
 export function ProfileTab() {
-  // 1. Состояние режима редактирования
   const [isEditing, setIsEditing] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const [tempData, setTempData] = useState<any>({});
 
-  // 2. Данные пользователя (в реальном приложении придут из контекста или API)
-  const [userData, setUserData] = useState({
-    name: "Иван Иванов",
-    email: "ivan@example.com",
-    phone: "+7 (999) 000-00-00",
-    birthDate: "01.01.1990",
-    avatar: "ИИ"
-  });
+  // Получаем данные пользователя из sessionStorage при монтировании
+  useEffect(() => {
+    const userString = sessionStorage.getItem("user");
+    if (userString) {
+      const user = JSON.parse(userString);
+      setUserData(user);
+      setTempData(user); // временные данные для редактирования
+    }
+  }, []);
 
-  // 3. Временное состояние для хранения правок до нажатия "Сохранить"
-  const [tempData, setTempData] = useState({ ...userData });
-
-  const handleEdit = () => {
-    setTempData({ ...userData });
-    setIsEditing(true);
+  // Обработчик изменения полей формы
+  const handleInputChange = (field: string, value: any) => {
+    setTempData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-  };
-
+  // Сохраняем изменения
   const handleSave = () => {
-    // Здесь будет вызов к Firebase / API
-    setUserData({ ...tempData });
+    setUserData(tempData);
+    sessionStorage.setItem("user", JSON.stringify(tempData));
     setIsEditing(false);
-    console.log("Данные сохранены:", tempData);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setTempData((prev) => ({ ...prev, [field]: value }));
+  // Отмена изменений
+  const handleCancel = () => {
+    setTempData(userData);
+    setIsEditing(false);
   };
+
+  if (!userData) return <div>Загрузка...</div>;
 
   return (
     <div className="space-y-6">
       {/* Заголовок и кнопки управления */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Профиль</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Профиль
+        </h2>
         {!isEditing ? (
           <button
-            onClick={handleEdit}
+            onClick={() => setIsEditing(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all shadow-sm text-sm font-medium"
           >
             <Edit className="h-4 w-4" />
@@ -77,7 +78,6 @@ export function ProfileTab() {
         <div className="flex items-center gap-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-inner">
-              {userData.avatar}
             </div>
             {isEditing && (
               <button className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-gray-700 rounded-full shadow-lg border border-gray-100 dark:border-gray-600 hover:scale-110 transition-transform">
@@ -86,8 +86,12 @@ export function ProfileTab() {
             )}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{userData.name}</h3>
-            <p className="text-gray-500 text-sm">Покупатель с декабря 2023</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              {userData.name}
+            </h3>
+            <p className="text-gray-500 text-sm">
+              Покупатель с {userData.createdAt?.slice(0, 10) || "неизвестно"}
+            </p>
           </div>
         </div>
 
@@ -97,7 +101,12 @@ export function ProfileTab() {
             { label: "Имя", field: "name", type: "text" },
             { label: "Email", field: "email", type: "email" },
             { label: "Телефон", field: "phone", type: "tel" },
-            { label: "Дата рождения", field: "birthDate", type: "text", placeholder: "ДД.ММ.ГГГГ" },
+            {
+              label: "Дата рождения",
+              field: "birthDate",
+              type: "text",
+              placeholder: "ДД.ММ.ГГГГ",
+            },
           ].map((item) => (
             <div key={item.field} className="space-y-2">
               <label className="text-sm font-semibold text-gray-600 dark:text-gray-400 ml-1">
@@ -106,14 +115,16 @@ export function ProfileTab() {
               {isEditing ? (
                 <input
                   type={item.type}
-                  value={tempData[item.field as keyof typeof tempData]}
-                  onChange={(e) => handleInputChange(item.field, e.target.value)}
+                  value={tempData[item.field] || ""}
+                  onChange={(e) =>
+                    handleInputChange(item.field, e.target.value)
+                  }
                   placeholder={item.placeholder}
                   className="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 />
               ) : (
                 <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-xl text-gray-900 dark:text-white font-medium">
-                  {userData[item.field as keyof typeof userData]}
+                  {userData[item.field] || "-"}
                 </div>
               )}
             </div>
