@@ -282,6 +282,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     loading,
     error,
     setError,
+    setProducts,
 
     // Корзина
     addToCart,

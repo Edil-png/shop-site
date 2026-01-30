@@ -10,6 +10,8 @@ export default function BestCategories() {
     return;
   }
 
+  const cat = categories.filter((el) => el.count)
+
   return (
     <section className="py-20 bg-white dark:bg-transparent overflow-hidden">
       <div className="container mx-auto px-4">
@@ -18,13 +20,13 @@ export default function BestCategories() {
             // Скелетон
             <SceletonCategories />
           ) : (
-            categories
+            cat
               .slice(0, 6)
-              .map((category) => (
+              .map((cat) => (
                 <CategoriesCard
-                  key={category.id}
-                  category={category}
-                  theme={category.image}
+                  key={cat.id}
+                  category={cat}
+                  theme={cat.image}
                 />
               ))
           )}

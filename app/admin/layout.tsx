@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
 import {
-  Menu,
-  Bell,
-  Search,
-  Shield,
-  ChevronLeft,
-  LogOut,
   Users,
   ShoppingCart,
   BarChart3,
@@ -17,11 +10,10 @@ import {
   DollarSign,
   Settings,
   Package,
+  Menu, // Добавили иконку меню
 } from "lucide-react";
 import { Sidebar } from "@/components/admin/components/SideBarAdmin";
-import { AdminProvider } from "@/context/adminContext";
 
-// Массив навигации: передаем сами компоненты иконок
 export const adminNavItems = [
   { name: "Дашборд", href: "/admin", icon: BarChart3 },
   { name: "Товары", href: "/admin/products", icon: Package },
@@ -37,38 +29,24 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // По умолчанию закрыт на мобилках
   const [isMobile, setIsMobile] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
+  // Логика определения мобильного экрана
   useEffect(() => {
-    // 1. Проверка авторизации
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("admin_token")
-        : null;
-    const isLoginPage = pathname === "/admin/login";
-
-    if (!token && !isLoginPage) {
-      router.replace("/admin/login");
-      return;
-    }
-
-    // 2. Адаптивность
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
+    const checkIsMobile = () => {
+      const mobile = window.innerWidth < 1024; // 1024px - порог lg в Tailwind
       setIsMobile(mobile);
-      if (mobile) setSidebarOpen(false);
+      if (!mobile) setSidebarOpen(true); // Всегда открыт на десктопе
+      else setSidebarOpen(false); // Закрыт при переходе на мобилку
     };
 
-    handleResize();
-    setIsLoading(false);
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [pathname, router]);
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
@@ -76,45 +54,39 @@ export default function AdminLayout({
   };
 
   if (pathname === "/admin/login") return <>{children}</>;
-  if (isLoading) return <AdminSkeleton />;
 
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB] dark:bg-[#111827]">
-      <AdminProvider>
-        {/* Sidebar Overlay для мобилок */}
-        {isMobile && sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+    <div className="flex min-h-screen bg-[#F9FAFB] dark:bg-[#030712]">
+      {/* Sidebar компонент */}
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        adminNavItems={adminNavItems}
+        handleLogout={handleLogout}
+        pathname={pathname}
+        isMobile={isMobile}
+        setSidebarOpen={setSidebarOpen}
+      />
 
-        <Sidebar
-          sidebarOpen={sidebarOpen}
-          adminNavItems={adminNavItems}
-          handleLogout={handleLogout}
-          pathname={pathname}
-          isMobile={isMobile}
-          setSidebarOpen={setSidebarOpen}
-        />
+      {/* Main Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Мобильный Header */}
+        <header className="flex lg:hidden items-center justify-between px-4 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 -ml-2 text-gray-600 dark:text-gray-300"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <span className="font-bold text-lg dark:text-white">Admin</span>
+          </div>
+          {/* Тут можно добавить аватарку или поиск */}
+        </header>
 
-        {/* Main Area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <main className="p-8 max-w-[1600px] mx-auto w-full">{children}</main>
-        </div>
-      </AdminProvider>
-    </div>
-  );
-}
-
-function AdminSkeleton() {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-950">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-        <p className="text-gray-400 font-medium animate-pulse">
-          Загрузка панели...
-        </p>
+        <main className="p-4 md:p-8 max-w-[1600px] mx-auto w-full">
+          {children}
+        </main>
       </div>
     </div>
   );

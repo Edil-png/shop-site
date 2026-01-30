@@ -1,29 +1,30 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-blue: #2563eb;
   --color-brand-dark: #0f172a;
+  
+  /* Добавляем переменные в систему Tailwind */
+  --color-surface: rgb(var(--background-rgb));
+  --color-text-main: rgb(var(--foreground-rgb));
 }
 
 :root {
   --foreground-rgb: 31, 41, 55;
   --background-rgb: 255, 255, 255;
   --glass-bg: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(229, 231, 235, 1);
 }
 
-/* Изменяем на селектор .dark, чтобы next-themes мог управлять темой */
-.dark {
+:where(.dark) {
   --foreground-rgb: 243, 244, 246;
   --background-rgb: 10, 10, 10;
   --glass-bg: rgba(10, 10, 10, 0.7);
-  --border-color: rgba(31, 41, 55, 1);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  transition: background-color 0.3s ease, color 0.3s ease; /* Плавный переход цвета */
+  color: var(--color-text-main);
+  background: var(--color-surface);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
-
-/* Остальные ваши стили (btn-primary, card и т.д.) без изменений */

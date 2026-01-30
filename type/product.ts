@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 /* ===== ТОВАР ===== */
 export type Product = {
+  sku: string;
   id: string;
   name: string;
   description: string;

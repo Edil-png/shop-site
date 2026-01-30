@@ -8,11 +8,13 @@ import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import { FavoriteProvider } from "@/context/FavoriteContext";
 import { AuthProvider } from "@/context/authContext";
-
+import { ThemeProvider } from "@/context/themeContext";
+import { StatsProvider } from "@/context/statsContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Modern Shop | Marketplace",
+  icons: "/fuvicon.svg",
+  title: "EL-SHOP",
   description: "Лучшие товары по лучшим ценам",
 };
 
@@ -24,18 +26,22 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className={inter.className}>
-        <ProductsProvider>
-          <AuthProvider>
-            <FavoriteProvider>
-              <CartProvider>
-                <Header products={[]} />
-                {children}
-                <Footer />
-                <Toaster position="top-center" />
-              </CartProvider>
-            </FavoriteProvider>
-          </AuthProvider>
-        </ProductsProvider>
+        <ThemeProvider>
+          <StatsProvider>
+            <ProductsProvider>
+              <AuthProvider>
+                <FavoriteProvider>
+                  <CartProvider>
+                    <Header />
+                    {children}
+                    <Footer />
+                    <Toaster position="top-center" />
+                  </CartProvider>
+                </FavoriteProvider>
+              </AuthProvider>
+            </ProductsProvider>
+          </StatsProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
